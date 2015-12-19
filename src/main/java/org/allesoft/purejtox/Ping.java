@@ -2,6 +2,8 @@ package org.allesoft.purejtox;
 
 import com.neilalexander.jnacl.NaCl;
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
+import org.allesoft.purejtox.packet.Builder;
+import org.allesoft.purejtox.packet.Parser;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -18,10 +20,10 @@ public class Ping {
 
     public Ping(DHT dht) {
         this.dht = dht;
+        this.dht.getNetwork().registerHandler((byte) 1, new PongHandler());
     }
 
     public void ping(IPPort ipPort, byte[] peerPublicKey) throws Exception {
-        byte[] pk = new byte[Const.DHT_PING_SIZE];
         byte[] ping_plain = new byte[Const.PING_PLAIN_SIZE];
 
         CryptoCore nacl = dht.getEncrypter(peerPublicKey);
@@ -32,19 +34,38 @@ public class Ping {
         System.arraycopy(ping_id, 0, ping_plain, 1, ping_id.length);
         nacl.encrypt(ping_plain);
 
-        pk[0] = 0;
-        System.arraycopy(dht.getPublicKey(), 0, pk, 1, dht.getPublicKey().length);
-        System.arraycopy(nacl.getNonce(), 0, pk, 1 + dht.getPublicKey().length, nacl.getNonce().length);
-        System.arraycopy(nacl.getCypherText(), 0, pk, 1 + dht.getPublicKey().length + nacl.getNonce().length, nacl.getCypherText().length);
+        byte[] packet = new Builder()
+                .field(new byte[]{0})
+                .field(dht.getPublicKey())
+                .field(nacl.getNonce())
+                .field(nacl.getCypherText())
+                .build();
 
-        dht.getNetwork().send(ipPort, pk);
+        dht.getNetwork().send(ipPort, packet);
     }
 
     class PongHandler implements NetworkHandler {
 
         @Override
         public void handle(byte[] data) throws Exception {
-            System.out.printf("");
+            System.out.printf("Ping response parsing\n");
+            Parser parser = new Parser(data)
+                    .field(1)
+                    .field(Const.crypto_box_PUBLICKEYBYTES)
+                    .field(Const.crypto_box_NONCEBYTES)
+                    .last()
+                    .parse();
+            CryptoCore nacl = dht.getEncrypter(parser.getField(1));
+
+            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
+            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
+
+            nacl.decryptx(parser.getField(2), parser.getField(3));
+            byte[] plain_text = nacl.getPlainText();
+
+            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
+            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
+            System.out.println("Payload: " + NaCl.asHex(plain_text));
         }
     }
 }

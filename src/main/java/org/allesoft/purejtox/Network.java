@@ -27,17 +27,20 @@ public class Network {
     }
 
     public void poll() throws Exception {
-        byte[] receiveData = new byte[1024];
+        byte[] receiveData = new byte[102400];
+        byte[] packet;
         for (;;) {
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);
+            packet = new byte[receivePacket.getLength()];
+            System.arraycopy(receiveData, 0, packet, 0, packet.length);
 
             byte key = receiveData[0];
             NetworkHandler handler = networkHandlerMap.get(key);
             if (handler != null) {
-                handler.handle(receiveData);
+                handler.handle(packet);
             } else {
-                String modifiedSentence = NaCl.asHex(receivePacket.getData());
+                String modifiedSentence = NaCl.asHex(packet);
                 System.out.println("Unknown FROM SERVER:" + modifiedSentence);
             }
         }
