@@ -11,7 +11,7 @@ import java.util.TreeSet;
 public class PingArray {
     Set<byte[]> keys = new HashSet<byte[]>();
 
-    public byte[] add(byte[] key) {
+    public byte[] add(byte[] key, IPPort ipPort) {
         keys.add(key);
         SecureRandom random = new SecureRandom();
         byte[] pingId = new byte[8];

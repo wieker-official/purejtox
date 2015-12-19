@@ -37,6 +37,8 @@ public class ToxTest {
         String peerKey = "5A390B1F5B13461C7BEE076BBB4C3AFF70B607CA211B0981FEA01F644F64F557";
         byte[] peerPublic = NaCl.getBinary(peerKey);
         ping.ping(ipPort, peerPublic);
+
+        dht.getNetwork().poll();
     }
 
     @Test

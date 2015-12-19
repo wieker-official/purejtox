@@ -26,7 +26,7 @@ public class Ping {
 
         CryptoCore nacl = dht.getEncrypter(peerPublicKey);
 
-        byte[] ping_id = pingArray.add(peerPublicKey.clone());
+        byte[] ping_id = pingArray.add(peerPublicKey.clone(), ipPort);
 
         ping_plain[0] = 0;
         System.arraycopy(ping_id, 0, ping_plain, 1, ping_id.length);
