@@ -1,6 +1,8 @@
 package com.neilalexander.jnacl;
 
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
+import org.allesoft.purejtox.DHT;
+import org.allesoft.purejtox.Ping;
 import org.testng.annotations.Test;
 
 import java.net.DatagramPacket;
@@ -24,6 +26,16 @@ public class ToxTest {
     byte[] data = new byte[DATA_SIZE];
     byte[] shared_key = new byte[SHARED_SIZE];
     byte[] nonce = new byte[NONCE_SIZE];
+
+    @Test
+    public void firstTest() throws Exception {
+        DHT dht = new DHT();
+        Ping ping = new Ping(dht);
+
+        String peerKey = "5A390B1F5B13461C7BEE076BBB4C3AFF70B607CA211B0981FEA01F644F64F557";
+        byte[] peerPublic = NaCl.getBinary(peerKey);
+        ping.ping(peerPublic);
+    }
 
     @Test
     public void testUdp() throws Exception {
