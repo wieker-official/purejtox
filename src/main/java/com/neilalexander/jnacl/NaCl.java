@@ -117,4 +117,8 @@ public class NaCl {
       formatter.format("%02x", b);
     return formatter.toString();
   }
+
+  public void print_key() {
+    System.out.println(asHex(precomputed));
+  }
 }
