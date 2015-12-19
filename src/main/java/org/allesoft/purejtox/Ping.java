@@ -39,4 +39,12 @@ public class Ping {
 
         dht.getNetwork().send(ipPort, pk);
     }
+
+    class PongHandler implements NetworkHandler {
+
+        @Override
+        public void handle(byte[] data) throws Exception {
+            System.out.printf("");
+        }
+    }
 }
