@@ -38,6 +38,8 @@ public class ToxTest {
         byte[] peerPublic = NaCl.getBinary(peerKey);
         ping.ping(ipPort, peerPublic);
 
+        dht.getnodes(ipPort, peerPublic);
+
         dht.getNetwork().poll();
     }
 
