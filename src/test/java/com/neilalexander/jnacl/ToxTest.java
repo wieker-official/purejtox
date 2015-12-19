@@ -75,15 +75,12 @@ public class ToxTest {
 
         byte[] myPublic = new byte[SHARED_SIZE];
         byte[] myPrivate = new byte[SHARED_SIZE];
-        //curve25519xsalsa20poly1305.crypto_box_keypair(myPrivate, myPublic);
-        myPrivate = NaCl.getBinary("ca18b3e641caf86fac88808e8ad05ce85fed70dce7cc74834796c98def57a33d");
-        myPublic = NaCl.getBinary("9b96e5ae11854bdcfecef22ea9af3c7dd0f69b83d7a54e13d53b6631c0f9c949");
+        curve25519xsalsa20poly1305.crypto_box_keypair(myPublic, myPrivate);
         String peerKey = "5A390B1F5B13461C7BEE076BBB4C3AFF70B607CA211B0981FEA01F644F64F557";
         byte[] peerPublic = NaCl.getBinary(peerKey);
         NaCl nacl = new NaCl(myPrivate, peerPublic);
         SecureRandom rng = new SecureRandom(); // new_nonce(nonce);
-        //rng.nextBytes(nonce);
-        nonce = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
+        rng.nextBytes(nonce);
 
         ping_plain[0] = 0;
         System.arraycopy(ping_id, 0, ping_plain, 1, ping_id.length); // memcpy(plain + crypto_box_PUBLICKEYBYTES, &ping_id, sizeof(ping_id));
@@ -133,7 +130,7 @@ public class ToxTest {
 
     @Test
     public void checkShared3() throws Exception {
-        String privateKey2 = "ca18b3e641caf86fac88808e8ad05ce85fed70dce7cc74834796c98def57a33d";
+        String privateKey2 = "34e61442565ac9375758e0391a5eef51a558b4c2996ac11f666c18b217a0054d";
         byte[] key = new byte[32];
         curve25519xsalsa20poly1305.crypto_box_getpublickey(key, NaCl.getBinary(privateKey2));
         System.out.println(NaCl.asHex(key));
