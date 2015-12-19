@@ -2,6 +2,7 @@ package com.neilalexander.jnacl;
 
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.DHT;
+import org.allesoft.purejtox.IPPort;
 import org.allesoft.purejtox.Ping;
 import org.testng.annotations.Test;
 
@@ -32,9 +33,10 @@ public class ToxTest {
         DHT dht = new DHT();
         Ping ping = new Ping(dht);
 
+        IPPort ipPort = new IPPort("localhost", 33445);
         String peerKey = "5A390B1F5B13461C7BEE076BBB4C3AFF70B607CA211B0981FEA01F644F64F557";
         byte[] peerPublic = NaCl.getBinary(peerKey);
-        ping.ping(peerPublic);
+        ping.ping(ipPort, peerPublic);
     }
 
     @Test

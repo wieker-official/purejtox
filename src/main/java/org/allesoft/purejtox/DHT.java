@@ -10,8 +10,11 @@ public class DHT {
     byte[] myPublicKey = new byte[Const.SHARED_SIZE];
     byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
 
-    public DHT() {
+    Network network;
+
+    public DHT() throws Exception {
         curve25519xsalsa20poly1305.crypto_box_keypair(myPublicKey, myPrivateKey);
+        this.network = new Network();
     }
 
     public CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
@@ -20,5 +23,9 @@ public class DHT {
 
     public byte[] getPublicKey() {
         return myPublicKey;
+    }
+
+    public Network getNetwork() {
+        return network;
     }
 }
