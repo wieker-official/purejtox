@@ -20,6 +20,7 @@ public class Network {
     }
 
     public void send(IPPort ipPort, byte[] packet) throws Exception {
+        System.out.println(ipPort.ip + ":" + ipPort.port);
         InetAddress IPAddress = InetAddress.getByName(ipPort.ip);
 
         DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, IPAddress, ipPort.port);
@@ -38,7 +39,8 @@ public class Network {
             byte key = receiveData[0];
             NetworkHandler handler = networkHandlerMap.get(key);
             if (handler != null) {
-                handler.handle(packet);
+                IPPort ipPort = new IPPort(receivePacket.getAddress().getHostAddress(), receivePacket.getPort());
+                handler.handle(ipPort, packet);
             } else {
                 String modifiedSentence = NaCl.asHex(packet);
                 System.out.println("Unknown FROM SERVER:" + modifiedSentence);

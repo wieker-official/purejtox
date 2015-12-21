@@ -51,10 +51,26 @@ public class DHT {
         getNetwork().send(ipPort, packet);
     }
 
+    public void sendnodes(IPPort ipPort, byte[] peerPublicKey, byte[] back) throws Exception {
+        byte[] plain = new Builder()
+                .field(new byte[] { 0 })
+                .field(back)
+                .build();
+        CryptoCore nacl = getEncrypter(peerPublicKey);
+        nacl.encrypt(plain);
+        byte[] packet = new Builder()
+                .field(new byte[] { 4 })
+                .field(myPublicKey)
+                .field(nacl.getNonce())
+                .field(nacl.getCypherText())
+                .build();
+        getNetwork().send(ipPort, packet);
+    }
+
     class SendNodesHandler implements NetworkHandler {
 
         @Override
-        public void handle(byte[] data) throws Exception {
+        public void handle(IPPort senderIPPort, byte[] data) throws Exception {
             if (data.length <= (1 + Const.crypto_box_PUBLICKEYBYTES + Const.crypto_box_NONCEBYTES + Const.PING_PLAIN_SIZE + Const.crypto_box_MACBYTES)) {
                 System.out.println("Fatal error");
             }
@@ -109,7 +125,7 @@ public class DHT {
     class GetNodesHandler implements NetworkHandler {
 
         @Override
-        public void handle(byte[] data) throws Exception {
+        public void handle(IPPort senderIPPort, byte[] data) throws Exception {
             if (data.length < (1 + Const.crypto_box_PUBLICKEYBYTES + Const.crypto_box_NONCEBYTES + Const.crypto_box_PUBLICKEYBYTES + 8 + Const.crypto_box_MACBYTES)) {
                 System.out.println("Fatal error: " + data.length);
             }
@@ -142,6 +158,8 @@ public class DHT {
 
             System.out.println("Peer key: " + NaCl.asHex(general.getField(0)));
             System.out.println("Ping id: " + NaCl.asHex(general.getField(1)));
+
+            sendnodes(senderIPPort, general.getField(0), general.getField(1));
         }
     }
 }

@@ -1,14 +1,8 @@
 package org.allesoft.purejtox;
 
 import com.neilalexander.jnacl.NaCl;
-import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.security.SecureRandom;
 
 /**
  * Created by wieker on 12/19/15.
@@ -47,7 +41,7 @@ public class Ping {
     class PongHandler implements NetworkHandler {
 
         @Override
-        public void handle(byte[] data) throws Exception {
+        public void handle(IPPort senderIPPort, byte[] data) throws Exception {
             System.out.printf("Ping response parsing\n");
             Parser parser = new Parser(data)
                     .field(1)
