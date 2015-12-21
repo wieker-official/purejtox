@@ -16,8 +16,10 @@ public class DHT {
 
     public DHT() throws Exception {
         curve25519xsalsa20poly1305.crypto_box_keypair(myPublicKey, myPrivateKey);
+        System.out.println(NaCl.asHex(myPublicKey));
         this.network = new Network();
         network.registerHandler((byte) 4, new SendNodesHandler());
+        network.registerHandler((byte) 2, new GetNodesHandler());
     }
 
     public CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
@@ -101,6 +103,45 @@ public class DHT {
             System.out.println("Ip: " + (0xff & (int) addr.getField(1)[0]) + "." + (0xff & (int) addr.getField(1)[1]) + "." + (0xff & (int) addr.getField(1)[2]) + "." + (0xff & (int) addr.getField(1)[3]));
             System.out.println("Port: " + ((0xff & (int) addr.getField(2)[0]) * 256 + (0xff & (int) addr.getField(2)[1])));
             System.out.println("Peer key: " + NaCl.asHex(addr.getField(3)));
+        }
+    }
+
+    class GetNodesHandler implements NetworkHandler {
+
+        @Override
+        public void handle(byte[] data) throws Exception {
+            if (data.length < (1 + Const.crypto_box_PUBLICKEYBYTES + Const.crypto_box_NONCEBYTES + Const.crypto_box_PUBLICKEYBYTES + 8 + Const.crypto_box_MACBYTES)) {
+                System.out.println("Fatal error: " + data.length);
+            }
+
+            System.out.printf("getnodes request parsing\n");
+            Parser parser = new Parser(data)
+                    .field(1)
+                    .field(Const.crypto_box_PUBLICKEYBYTES)
+                    .field(Const.crypto_box_NONCEBYTES)
+                    .last()
+                    .parse();
+            CryptoCore nacl = getEncrypter(parser.getField(1));
+
+            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
+            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
+
+            nacl.decryptx(parser.getField(2), parser.getField(3));
+            byte[] plain_text = nacl.getPlainText();
+
+            System.out.println("Plain text length: " + plain_text.length);
+            System.out.println("1 + sizeof(uint64_t) + crypto_box_MACBYTES: " + (1 + 8 + Const.crypto_box_MACBYTES));
+            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
+            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
+            System.out.println("Payload: " + NaCl.asHex(plain_text));
+
+            Parser general = new Parser(plain_text)
+                    .field(Const.crypto_box_PUBLICKEYBYTES)
+                    .field(8)
+                    .parse();
+
+            System.out.println("Peer key: " + NaCl.asHex(general.getField(0)));
+            System.out.println("Ping id: " + NaCl.asHex(general.getField(1)));
         }
     }
 }

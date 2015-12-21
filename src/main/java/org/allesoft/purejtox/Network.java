@@ -16,7 +16,7 @@ public class Network {
     Map<Byte, NetworkHandler> networkHandlerMap = new TreeMap<Byte, NetworkHandler>();
 
     public Network() throws Exception {
-        clientSocket = new DatagramSocket();
+        clientSocket = new DatagramSocket(50000);
     }
 
     public void send(IPPort ipPort, byte[] packet) throws Exception {
