@@ -1,9 +1,7 @@
 package com.neilalexander.jnacl;
 
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
-import org.allesoft.purejtox.DHT;
-import org.allesoft.purejtox.IPPort;
-import org.allesoft.purejtox.Ping;
+import org.allesoft.purejtox.*;
 import org.testng.annotations.Test;
 
 import java.net.DatagramPacket;
@@ -30,7 +28,7 @@ public class ToxTest {
 
     @Test
     public void firstTest() throws Exception {
-        DHT dht = new DHT();
+        DHT dht = new DHT(new NetworkImpl());
         Ping ping = new Ping(dht);
 
         IPPort ipPort = new IPPort("localhost", 33445);

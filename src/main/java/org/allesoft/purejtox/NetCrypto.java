@@ -1,37 +1,35 @@
 package org.allesoft.purejtox;
 
-import com.neilalexander.jnacl.NaCl;
 import org.allesoft.purejtox.packet.Builder;
-import org.allesoft.purejtox.packet.Parser;
 
 /**
  * Created by wieker on 12/19/15.
  */
 public class NetCrypto {
 
-    DHT dht;
+    PacketHandler packetHandler;
 
-    public NetCrypto(DHT dht) {
-        this.dht = dht;
+    public NetCrypto(PacketHandler packetHandler) {
+        this.packetHandler = packetHandler;
     }
 
     public void sendCookie(IPPort ipPort, byte[] peerPublicKey) throws Exception {
         byte[] plain = new Builder()
-                .field(dht.myPublicKey)
+                .field(packetHandler.myPublicKey)
                 .field(new byte[Const.crypto_box_PUBLICKEYBYTES])
                 .field(new byte[8])
                 .build();
 
-        CryptoCore nacl = dht.getEncrypter(peerPublicKey);
+        CryptoCore nacl = packetHandler.getEncrypter(peerPublicKey);
         nacl.encrypt(plain);
 
         byte[] packet = new Builder()
                 .field(new byte[]{24})
-                .field(dht.getPublicKey())
+                .field(packetHandler.getPublicKey())
                 .field(nacl.getNonce())
                 .field(nacl.getCypherText())
                 .build();
 
-        dht.getNetwork().send(ipPort, packet);
+        packetHandler.getNetwork().send(ipPort, packet);
     }
 }

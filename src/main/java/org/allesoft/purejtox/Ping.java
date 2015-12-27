@@ -9,18 +9,18 @@ import org.allesoft.purejtox.packet.Parser;
  */
 public class Ping {
 
-    DHT dht;
+    PacketHandler packetHandler;
     PingArray pingArray = new PingArray();
 
-    public Ping(DHT dht) {
-        this.dht = dht;
-        this.dht.getNetwork().registerHandler((byte) 1, new PongHandler());
+    public Ping(PacketHandler packetHandler) {
+        this.packetHandler = packetHandler;
+        this.packetHandler.getNetwork().registerHandler((byte) 1, new PongHandler());
     }
 
     public void ping(IPPort ipPort, byte[] peerPublicKey) throws Exception {
         byte[] ping_plain = new byte[Const.PING_PLAIN_SIZE];
 
-        CryptoCore nacl = dht.getEncrypter(peerPublicKey);
+        CryptoCore nacl = packetHandler.getEncrypter(peerPublicKey);
 
         byte[] ping_id = pingArray.add(peerPublicKey.clone(), ipPort);
 
@@ -30,12 +30,12 @@ public class Ping {
 
         byte[] packet = new Builder()
                 .field(new byte[]{0})
-                .field(dht.getPublicKey())
+                .field(packetHandler.getPublicKey())
                 .field(nacl.getNonce())
                 .field(nacl.getCypherText())
                 .build();
 
-        dht.getNetwork().send(ipPort, packet);
+        packetHandler.getNetwork().send(ipPort, packet);
     }
 
     class PongHandler implements NetworkHandler {
@@ -49,7 +49,7 @@ public class Ping {
                     .field(Const.crypto_box_NONCEBYTES)
                     .last()
                     .parse();
-            CryptoCore nacl = dht.getEncrypter(parser.getField(1));
+            CryptoCore nacl = packetHandler.getEncrypter(parser.getField(1));
 
             System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
             System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));

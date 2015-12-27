@@ -8,30 +8,14 @@ import org.allesoft.purejtox.packet.Parser;
 /**
  * Created by wieker on 12/19/15.
  */
-public class DHT {
-    byte[] myPublicKey = new byte[Const.SHARED_SIZE];
-    byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
+public class DHT extends PacketHandler {
 
-    Network network;
-
-    public DHT() throws Exception {
+    public DHT(Network network) throws Exception {
+        super(network);
         curve25519xsalsa20poly1305.crypto_box_keypair(myPublicKey, myPrivateKey);
         System.out.println(NaCl.asHex(myPublicKey));
-        this.network = new Network();
-        network.registerHandler((byte) 4, new SendNodesHandler());
-        network.registerHandler((byte) 2, new GetNodesHandler());
-    }
-
-    public CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
-        return new CryptoCore(myPrivateKey, peerPublicKey);
-    }
-
-    public byte[] getPublicKey() {
-        return myPublicKey;
-    }
-
-    public Network getNetwork() {
-        return network;
+        this.network.registerHandler((byte) 4, new SendNodesHandler());
+        this.network.registerHandler((byte) 2, new GetNodesHandler());
     }
 
     public void getnodes(IPPort ipPort, byte[] peerPublicKey) throws Exception {
@@ -40,15 +24,7 @@ public class DHT {
                 .field(myPublicKey)
                 .field(pingId)
                 .build();
-        CryptoCore nacl = getEncrypter(peerPublicKey);
-        nacl.encrypt(plain);
-        byte[] packet = new Builder()
-                .field(new byte[] { 2 })
-                .field(myPublicKey)
-                .field(nacl.getNonce())
-                .field(nacl.getCypherText())
-                .build();
-        getNetwork().send(ipPort, packet);
+        encryptAndSend(ipPort, peerPublicKey, plain);
     }
 
     public void sendnodes(IPPort ipPort, byte[] peerPublicKey, byte[] back) throws Exception {
@@ -56,15 +32,7 @@ public class DHT {
                 .field(new byte[] { 0 })
                 .field(back)
                 .build();
-        CryptoCore nacl = getEncrypter(peerPublicKey);
-        nacl.encrypt(plain);
-        byte[] packet = new Builder()
-                .field(new byte[] { 4 })
-                .field(myPublicKey)
-                .field(nacl.getNonce())
-                .field(nacl.getCypherText())
-                .build();
-        getNetwork().send(ipPort, packet);
+        encryptAndSend(ipPort, peerPublicKey, plain);
     }
 
     class SendNodesHandler implements NetworkHandler {
@@ -75,28 +43,8 @@ public class DHT {
                 System.out.println("Fatal error");
             }
 
-            int dataSize = data.length - (1 + Const.crypto_box_PUBLICKEYBYTES + Const.crypto_box_NONCEBYTES + 1 + 8 + Const.crypto_box_MACBYTES);
-
             System.out.printf("sendnodes response parsing\n");
-            Parser parser = new Parser(data)
-                    .field(1)
-                    .field(Const.crypto_box_PUBLICKEYBYTES)
-                    .field(Const.crypto_box_NONCEBYTES)
-                    .last()
-                    .parse();
-            CryptoCore nacl = getEncrypter(parser.getField(1));
-
-            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
-            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
-
-            nacl.decryptx(parser.getField(2), parser.getField(3));
-            byte[] plain_text = nacl.getPlainText();
-
-            System.out.println("Plain text length: " + plain_text.length);
-            System.out.println("1 + sizeof(uint64_t) + crypto_box_MACBYTES: " + (1 + 8 + Const.crypto_box_MACBYTES));
-            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
-            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
-            System.out.println("Payload: " + NaCl.asHex(plain_text));
+            byte[] plain_text = decryptCrypto(data);
 
             Parser general = new Parser(plain_text)
                     .field(1)
@@ -131,25 +79,7 @@ public class DHT {
             }
 
             System.out.printf("getnodes request parsing\n");
-            Parser parser = new Parser(data)
-                    .field(1)
-                    .field(Const.crypto_box_PUBLICKEYBYTES)
-                    .field(Const.crypto_box_NONCEBYTES)
-                    .last()
-                    .parse();
-            CryptoCore nacl = getEncrypter(parser.getField(1));
-
-            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
-            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
-
-            nacl.decryptx(parser.getField(2), parser.getField(3));
-            byte[] plain_text = nacl.getPlainText();
-
-            System.out.println("Plain text length: " + plain_text.length);
-            System.out.println("1 + sizeof(uint64_t) + crypto_box_MACBYTES: " + (1 + 8 + Const.crypto_box_MACBYTES));
-            System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
-            System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
-            System.out.println("Payload: " + NaCl.asHex(plain_text));
+            byte[] plain_text = decryptCrypto(data);
 
             Parser general = new Parser(plain_text)
                     .field(Const.crypto_box_PUBLICKEYBYTES)
