@@ -11,7 +11,7 @@ public class DumpTest {
 
     @Test
     public void firstTest() throws Exception {
-        DHT dht = new DHT(new NetworkImpl());
+        DHT dht = new DHT(new NetworkImplForTest());
         Ping ping = new Ping(dht);
 
         IPPort ipPort = new IPPort("localhost", 33445);
@@ -20,6 +20,12 @@ public class DumpTest {
         ping.ping(ipPort, peerPublic);
 
         dht.getnodes(ipPort, peerPublic);
+        dht.getNetwork().registerHandler((byte) 33, new NetworkHandler() {
+            @Override
+            public void handle(IPPort senderIPPort, byte[] data) throws Exception {
+
+            }
+        });
 
         dht.getNetwork().poll();
     }
