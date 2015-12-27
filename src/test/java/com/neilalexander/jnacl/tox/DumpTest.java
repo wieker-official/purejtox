@@ -26,6 +26,18 @@ public class DumpTest {
 
             }
         });
+        dht.getNetwork().registerHandler((byte) 32, new NetworkHandler() {
+            @Override
+            public void handle(IPPort senderIPPort, byte[] data) throws Exception {
+
+            }
+        });
+        dht.getNetwork().registerHandler((byte) 128, new NetworkHandler() {
+            @Override
+            public void handle(IPPort senderIPPort, byte[] data) throws Exception {
+
+            }
+        });
 
         dht.getNetwork().poll();
     }
