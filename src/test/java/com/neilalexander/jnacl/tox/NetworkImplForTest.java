@@ -30,16 +30,17 @@ public class NetworkImplForTest implements Network {
     @Override
     public void poll() throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        for (;;) {
+        for (int i = 0; i < 10000; i ++) {
             String line = reader.readLine();
             if (line.contains("Data sent")) {
+                String to = line.substring(18, 23);
                 line = line.substring(25);
                 byte[] data = NaCl.getBinary(line);
 
                 byte key = data[0];
                 NetworkHandler handler = networkHandlerMap.get(key);
                 if (handler != null) {
-                    IPPort ipPort = new IPPort("127.0.0.1", 10);
+                    IPPort ipPort = new IPPort("127.0.0.1", Integer.parseInt(to));
                     handler.handle(ipPort, data);
                 } else {
                     String modifiedSentence = NaCl.asHex(data);
