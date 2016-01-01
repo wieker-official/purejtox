@@ -5,6 +5,8 @@ import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
 
+import java.util.Arrays;
+
 /**
  * Created by wieker on 12/19/15.
  */
@@ -57,16 +59,24 @@ public class DHT extends PacketHandler {
             System.out.println("Count: " + NaCl.asHex(general.getField(0)));
             System.out.println("Comeback: " + NaCl.asHex(general.getField(2)));
             byte[] payload = general.getField(1);
-            Parser addr = new Parser(payload)
-                    .field(1)
-                    .field(4)
-                    .field(2)
-                    .field(Const.crypto_box_PUBLICKEYBYTES)
-                    .parse();
-            System.out.println("Ip family: " + (int) addr.getField(0)[0]);
-            System.out.println("Ip: " + (0xff & (int) addr.getField(1)[0]) + "." + (0xff & (int) addr.getField(1)[1]) + "." + (0xff & (int) addr.getField(1)[2]) + "." + (0xff & (int) addr.getField(1)[3]));
-            System.out.println("Port: " + ((0xff & (int) addr.getField(2)[0]) * 256 + (0xff & (int) addr.getField(2)[1])));
-            System.out.println("Peer key: " + NaCl.asHex(addr.getField(3)));
+            for (int q = 0; q < count; q ++) {
+                int l = 1 + 4 + 2 + Const.crypto_box_PUBLICKEYBYTES;
+                byte[] ipa = Arrays.copyOfRange(payload, q * l, (q + 1) * l);
+
+                Parser addr = new Parser(ipa)
+                        .field(1)
+                        .field(4)
+                        .field(2)
+                        .field(Const.crypto_box_PUBLICKEYBYTES)
+                        .parse();
+                System.out.println("Ip family: " + (int) addr.getField(0)[0]);
+                System.out.println("Ip: " + (0xff & (int) addr.getField(1)[0]) + "." + (0xff & (int) addr.getField(1)[1]) + "." + (0xff & (int) addr.getField(1)[2]) + "." + (0xff & (int) addr.getField(1)[3]));
+                System.out.println("Port: " + ((0xff & (int) addr.getField(2)[0]) * 256 + (0xff & (int) addr.getField(2)[1])));
+                System.out.println("Peer key: " + NaCl.asHex(addr.getField(3)));
+
+                getnodes(new IPPort((0xff & (int) addr.getField(1)[0]) + "." + (0xff & (int) addr.getField(1)[1]) + "." + (0xff & (int) addr.getField(1)[2]) + "." + (0xff & (int) addr.getField(1)[3]),
+                        ((0xff & (int) addr.getField(2)[0]) * 256 + (0xff & (int) addr.getField(2)[1]))), addr.getField(3));
+            }
         }
     }
 

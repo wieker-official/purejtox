@@ -54,6 +54,8 @@ public class Ping extends PacketHandler {
             System.out.printf("Ping request parsing\n");
             byte[] plain_text = packetHandler.decryptCrypto(data);
             System.out.println("Payload: " + NaCl.asHex(plain_text));
+
+            pong(senderIPPort, packetHandler.getLastPeerPublicKey());
         }
     }
 }

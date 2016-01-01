@@ -12,6 +12,8 @@ public class PacketHandler {
     byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
     Network network;
 
+    byte[] lastPeerPublicKey;
+
     public PacketHandler(Network network) {
         this.network = network;
     }
@@ -61,6 +63,12 @@ public class PacketHandler {
         System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
         System.out.println("Payload: " + NaCl.asHex(plain_text));
 
+        lastPeerPublicKey = parser.getField(1);
+
         return plain_text;
+    }
+
+    public byte[] getLastPeerPublicKey() {
+        return lastPeerPublicKey;
     }
 }

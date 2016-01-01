@@ -16,7 +16,7 @@ public class NetworkImpl implements Network {
     Map<Byte, NetworkHandler> networkHandlerMap = new TreeMap<Byte, NetworkHandler>();
 
     public NetworkImpl() throws Exception {
-        clientSocket = new DatagramSocket(50000);
+        clientSocket = new DatagramSocket(33445);
     }
 
     @Override

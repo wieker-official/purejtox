@@ -31,8 +31,8 @@ public class ToxTest {
         DHT dht = new DHT(new NetworkImpl());
         Ping ping = new Ping(dht);
 
-        IPPort ipPort = new IPPort("localhost", 33445);
-        String peerKey = "5A390B1F5B13461C7BEE076BBB4C3AFF70B607CA211B0981FEA01F644F64F557";
+        IPPort ipPort = new IPPort("144.76.60.215", 33445);
+        String peerKey = "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F";
         byte[] peerPublic = NaCl.getBinary(peerKey);
         ping.ping(ipPort, peerPublic);
 
