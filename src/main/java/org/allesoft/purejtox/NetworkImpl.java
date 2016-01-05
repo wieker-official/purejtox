@@ -21,7 +21,7 @@ public class NetworkImpl implements Network {
 
     @Override
     public void send(IPPort ipPort, byte[] packet) throws Exception {
-        System.out.println(ipPort.ip + ":" + ipPort.port);
+        //System.out.println(ipPort.ip + ":" + ipPort.port);
         InetAddress IPAddress = InetAddress.getByName(ipPort.ip);
 
         DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, IPAddress, ipPort.port);

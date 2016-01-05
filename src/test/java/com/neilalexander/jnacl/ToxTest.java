@@ -2,6 +2,7 @@ package com.neilalexander.jnacl;
 
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.*;
+import org.allesoft.purejtox.modules.dht.DHT;
 import org.testng.annotations.Test;
 
 import java.net.DatagramPacket;
@@ -28,17 +29,17 @@ public class ToxTest {
 
     @Test
     public void firstTest() throws Exception {
-        DHT dht = new DHT(new NetworkImpl());
-        Ping ping = new Ping(dht);
+        Network network = new NetworkImpl();
+        DHT dht = new DHT(network);
 
         IPPort ipPort = new IPPort("144.76.60.215", 33445);
         String peerKey = "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F";
         byte[] peerPublic = NaCl.getBinary(peerKey);
-        ping.ping(ipPort, peerPublic);
+        //dht.ping(ipPort, peerPublic);
 
-        dht.getnodes(ipPort, peerPublic);
+        dht.bootstrap(ipPort, peerPublic);
 
-        dht.getNetwork().poll();
+        network.poll();
     }
 
     @Test

@@ -1,20 +1,24 @@
-package org.allesoft.purejtox;
+package org.allesoft.purejtox.modules.dht;
 
 import com.neilalexander.jnacl.NaCl;
+import org.allesoft.purejtox.Const;
+import org.allesoft.purejtox.CryptoCore;
+import org.allesoft.purejtox.IPPort;
+import org.allesoft.purejtox.Network;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
 
 /**
  * Created by wieker on 12/28/15.
  */
-public class PacketHandler {
+public class DHTPacketHandler {
     byte[] myPublicKey = new byte[Const.SHARED_SIZE];
     byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
     Network network;
 
     byte[] lastPeerPublicKey;
 
-    public PacketHandler(Network network) {
+    public DHTPacketHandler(Network network) {
         this.network = network;
     }
 
@@ -51,17 +55,17 @@ public class PacketHandler {
                 .parse();
         CryptoCore nacl = getEncrypter(parser.getField(1));
 
-        System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
-        System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
+        /*System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
+        System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));*/
 
         nacl.decryptx(parser.getField(2), parser.getField(3));
         byte[] plain_text = nacl.getPlainText();
 
-        System.out.println("Plain text length: " + plain_text.length);
+        /*System.out.println("Plain text length: " + plain_text.length);
         System.out.println("1 + sizeof(uint64_t) + crypto_box_MACBYTES: " + (1 + 8 + Const.crypto_box_MACBYTES));
         System.out.println("Peer public key: " + NaCl.asHex(parser.getField(1)));
         System.out.println("Cypher: " + NaCl.asHex(parser.getField(3)));
-        System.out.println("Payload: " + NaCl.asHex(plain_text));
+        System.out.println("Payload: " + NaCl.asHex(plain_text));*/
 
         lastPeerPublicKey = parser.getField(1);
 
