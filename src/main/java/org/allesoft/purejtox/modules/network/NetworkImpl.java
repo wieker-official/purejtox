@@ -1,6 +1,8 @@
-package org.allesoft.purejtox;
+package org.allesoft.purejtox.modules.network;
 
 import com.neilalexander.jnacl.NaCl;
+import org.allesoft.purejtox.IPPort;
+import org.allesoft.purejtox.modules.dht.PacketType;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -51,7 +53,7 @@ public class NetworkImpl implements Network {
     }
 
     @Override
-    public void registerHandler(byte code, NetworkHandler handler) {
-        networkHandlerMap.put(code, handler);
+    public void registerHandler(PacketType code, NetworkHandler handler) {
+        networkHandlerMap.put(code.getCode(), handler);
     }
 }

@@ -4,8 +4,8 @@ import com.neilalexander.jnacl.NaCl;
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.Const;
 import org.allesoft.purejtox.IPPort;
-import org.allesoft.purejtox.Network;
-import org.allesoft.purejtox.NetworkHandler;
+import org.allesoft.purejtox.modules.network.Network;
+import org.allesoft.purejtox.modules.network.NetworkHandler;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
 
@@ -22,10 +22,10 @@ public class DHTImpl implements DHT {
         dhtPacketHandler = new DHTPacketHandler(network);
         curve25519xsalsa20poly1305.crypto_box_keypair(dhtPacketHandler.myPublicKey, dhtPacketHandler.myPrivateKey);
         System.out.println(NaCl.asHex(dhtPacketHandler.myPublicKey));
-        network.registerHandler((byte) 4, new SendNodesHandler());
-        network.registerHandler((byte) 2, new GetNodesHandler());;
-        network.registerHandler((byte) 1, new PongHandler());
-        network.registerHandler((byte) 0, new PingHandler());
+        network.registerHandler(PacketType.SEND_NODES, new SendNodesHandler());
+        network.registerHandler(PacketType.GET_NODES, new GetNodesHandler());;
+        network.registerHandler(PacketType.PING_RESPONSE, new PongHandler());
+        network.registerHandler(PacketType.PING_REQUEST, new PingHandler());
     }
 
     @Override
@@ -39,7 +39,7 @@ public class DHTImpl implements DHT {
                 .field(keyToResolve)
                 .field(pingId)
                 .build();
-        dhtPacketHandler.encryptAndSend(ipPort, peerPublicKey, plain);
+        dhtPacketHandler.encryptAndSend(PacketType.GET_NODES, ipPort, peerPublicKey, plain);
     }
 
     void sendnodes(IPPort ipPort, byte[] peerPublicKey, byte[] back) throws Exception {
@@ -47,7 +47,7 @@ public class DHTImpl implements DHT {
                 .field(new byte[] { 0 })
                 .field(back)
                 .build();
-        dhtPacketHandler.encryptAndSend(ipPort, peerPublicKey, plain);
+        dhtPacketHandler.encryptAndSend(PacketType.SEND_NODES, ipPort, peerPublicKey, plain);
     }
 
     void ping(IPPort ipPort, byte[] peerPublicKey) throws Exception {
@@ -56,7 +56,7 @@ public class DHTImpl implements DHT {
         ping_plain[0] = 0;
         System.arraycopy(pingId, 0, ping_plain, 1, pingId.length);
 
-        dhtPacketHandler.encryptAndSend(ipPort, peerPublicKey, ping_plain);
+        dhtPacketHandler.encryptAndSend(PacketType.PING_REQUEST, ipPort, peerPublicKey, ping_plain);
     }
 
     void pong(IPPort ipPort, byte[] peerPublicKey, byte[] back) throws Exception {
@@ -65,7 +65,7 @@ public class DHTImpl implements DHT {
         ping_plain[0] = 1;
         System.arraycopy(ping_id, 0, ping_plain, 1, ping_id.length);
 
-        dhtPacketHandler.encryptAndSend(ipPort, peerPublicKey, ping_plain);
+        dhtPacketHandler.encryptAndSend(PacketType.PING_RESPONSE, ipPort, peerPublicKey, ping_plain);
     }
 
     class SendNodesHandler implements NetworkHandler {
@@ -108,8 +108,8 @@ public class DHTImpl implements DHT {
                 System.out.println("Port: " + nodePort);
                 System.out.println("Peer key: " + NaCl.asHex(nodePublicKey));*/
 
-                //ping(new IPPort(nodeIp, nodePort), nodePublicKey);
-                getnodes(new IPPort(nodeIp, nodePort), nodePublicKey, dhtPacketHandler.myPublicKey);
+                ping(new IPPort(nodeIp, nodePort), nodePublicKey);
+                //getnodes(new IPPort(nodeIp, nodePort), nodePublicKey, dhtPacketHandler.myPublicKey);
             }
         }
     }

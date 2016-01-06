@@ -2,8 +2,9 @@ package com.neilalexander.jnacl.tox;
 
 import com.neilalexander.jnacl.NaCl;
 import org.allesoft.purejtox.IPPort;
-import org.allesoft.purejtox.Network;
-import org.allesoft.purejtox.NetworkHandler;
+import org.allesoft.purejtox.modules.network.Network;
+import org.allesoft.purejtox.modules.network.NetworkHandler;
+import org.allesoft.purejtox.modules.dht.PacketType;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -52,7 +53,7 @@ public class NetworkImplForTest implements Network {
     }
 
     @Override
-    public void registerHandler(byte code, NetworkHandler handler) {
-        networkHandlerMap.put(code, handler);
+    public void registerHandler(PacketType code, NetworkHandler handler) {
+        networkHandlerMap.put(code.getCode(), handler);
     }
 }

@@ -1,4 +1,6 @@
-package org.allesoft.purejtox;
+package org.allesoft.purejtox.modules.network;
+
+import org.allesoft.purejtox.IPPort;
 
 /**
  * Created by wieker on 12/19/15.

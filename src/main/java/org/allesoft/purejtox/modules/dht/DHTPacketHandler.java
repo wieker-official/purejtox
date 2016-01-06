@@ -1,10 +1,9 @@
 package org.allesoft.purejtox.modules.dht;
 
-import com.neilalexander.jnacl.NaCl;
 import org.allesoft.purejtox.Const;
 import org.allesoft.purejtox.CryptoCore;
 import org.allesoft.purejtox.IPPort;
-import org.allesoft.purejtox.Network;
+import org.allesoft.purejtox.modules.network.Network;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
 
@@ -34,7 +33,7 @@ public class DHTPacketHandler {
         return network;
     }
 
-    public void encryptAndSend(IPPort ipPort, byte[] peerPublicKey, byte[] plain) throws Exception {
+    public void encryptAndSend(PacketType type, IPPort ipPort, byte[] peerPublicKey, byte[] plain) throws Exception {
         CryptoCore nacl = getEncrypter(peerPublicKey);
         nacl.encrypt(plain);
         byte[] packet = new Builder()

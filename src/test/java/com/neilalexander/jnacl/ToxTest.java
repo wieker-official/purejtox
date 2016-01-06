@@ -4,6 +4,8 @@ import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.*;
 import org.allesoft.purejtox.modules.dht.DHT;
 import org.allesoft.purejtox.modules.dht.DHTImpl;
+import org.allesoft.purejtox.modules.network.Network;
+import org.allesoft.purejtox.modules.network.NetworkImpl;
 import org.testng.annotations.Test;
 
 import java.net.DatagramPacket;
