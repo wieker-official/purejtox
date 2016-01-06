@@ -3,6 +3,7 @@ package com.neilalexander.jnacl;
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.*;
 import org.allesoft.purejtox.modules.dht.DHT;
+import org.allesoft.purejtox.modules.dht.DHTImpl;
 import org.testng.annotations.Test;
 
 import java.net.DatagramPacket;
@@ -30,7 +31,7 @@ public class ToxTest {
     @Test
     public void firstTest() throws Exception {
         Network network = new NetworkImpl();
-        DHT dht = new DHT(network);
+        DHT dht = new DHTImpl(network);
 
         IPPort ipPort = new IPPort("144.76.60.215", 33445);
         String peerKey = "04119E835DF3E78BACF0F84235B300546AF8B936F035185E2A8E9E0A67C8924F";
