@@ -2,7 +2,6 @@ package org.allesoft.purejtox.modules.dht;
 
 import org.allesoft.purejtox.Const;
 import org.allesoft.purejtox.IPPort;
-import org.allesoft.purejtox.modules.network.NetworkHandler;
 import org.allesoft.purejtox.packet.Parser;
 
 import java.util.Arrays;
@@ -10,7 +9,7 @@ import java.util.Arrays;
 /**
  * Created by wieker on 1/7/16.
  */
-class SendNodesHandler implements NetworkHandler {
+class SendNodesHandler implements DHTNetworkHandler {
 
     private DHTImpl dht;
 
@@ -19,10 +18,8 @@ class SendNodesHandler implements NetworkHandler {
     }
 
     @Override
-    public void handle(IPPort senderIPPort, byte[] data) throws Exception {
+    public void handle(DHTNodeInfo dhtNode, byte[] sendNodesPlainText) throws Exception {
         //System.out.printf("sendnodes response parsing\n");
-        byte[] sendNodesPlainText = dht.getDhtPacketAdapter().decryptCrypto(data);
-        dht.add(senderIPPort, Arrays.copyOf(dht.getDhtPacketAdapter().getLastPeerPublicKey(), Const.crypto_box_PUBLICKEYBYTES));
 
         Parser parsedSendNodesResponse = new Parser(sendNodesPlainText)
                 .field(1)
@@ -58,7 +55,7 @@ class SendNodesHandler implements NetworkHandler {
             System.out.println("Peer key: " + NaCl.asHex(nodePublicKey));*/
 
             dht.ping(new IPPort(nodeIp, nodePort), nodePublicKey);
-            dht.getnodes(new KnownDHTNode(new IPPort(nodeIp, nodePort), nodePublicKey), dht.getDhtPacketAdapter().myPublicKey);
+            dht.getnodes(new DHTNodeInfo(new IPPort(nodeIp, nodePort), nodePublicKey), dht.getDhtPacketAdapter().myPublicKey);
         }
     }
 }

@@ -18,33 +18,37 @@ public class DHTImpl implements DHT {
     private DHTPacketAdapter dhtPacketAdapter;
 
     public DHTImpl(Network network) throws Exception {
-        dhtPacketAdapter = new DHTPacketAdapter(network);
+        dhtPacketAdapter = new DHTPacketAdapter(network, this);
         curve25519xsalsa20poly1305.crypto_box_keypair(dhtPacketAdapter.myPublicKey, dhtPacketAdapter.myPrivateKey);
         System.out.println(NaCl.asHex(dhtPacketAdapter.myPublicKey));
-        network.registerHandler(PacketType.SEND_NODES, new SendNodesHandler(this));
-        network.registerHandler(PacketType.GET_NODES, new GetNodesHandler(this));
-        ;
-        network.registerHandler(PacketType.PING_RESPONSE, new PongHandler(this));
-        network.registerHandler(PacketType.PING_REQUEST, new PingHandler(this));
+        network.registerHandler(PacketType.SEND_NODES, dhtPacketAdapter);
+        dhtPacketAdapter.registerHandler(PacketType.SEND_NODES, new SendNodesHandler(this));
+        network.registerHandler(PacketType.GET_NODES, dhtPacketAdapter);
+        dhtPacketAdapter.registerHandler(PacketType.GET_NODES, new GetNodesHandler(this));
+
+        network.registerHandler(PacketType.PING_RESPONSE, dhtPacketAdapter);
+        dhtPacketAdapter.registerHandler(PacketType.PING_RESPONSE, new PongHandler(this));
+        network.registerHandler(PacketType.PING_REQUEST, dhtPacketAdapter);
+        dhtPacketAdapter.registerHandler(PacketType.PING_REQUEST, new PingHandler(this));
     }
 
     @Override
     public void bootstrap(IPPort ipPort, byte[] peerPublicKey) throws Exception {
-        getnodes(new KnownDHTNode(ipPort, peerPublicKey), dhtPacketAdapter.myPublicKey);
+        getnodes(new DHTNodeInfo(ipPort, peerPublicKey), dhtPacketAdapter.myPublicKey);
     }
 
-    List<KnownDHTNode> knownNodes = new ArrayList<KnownDHTNode>();
+    List<DHTNodeInfo> knownNodes = new ArrayList<DHTNodeInfo>();
 
-    KnownDHTNode add(IPPort ip, byte[] remotePeerKey) throws Exception {
-        KnownDHTNode entry = null;
-        for (KnownDHTNode search : knownNodes) {
+    DHTNodeInfo add(IPPort ip, byte[] remotePeerKey) throws Exception {
+        DHTNodeInfo entry = null;
+        for (DHTNodeInfo search : knownNodes) {
             if (search.ipPort.port.equals(ip.port) &&
                     search.ipPort.ip.equals(ip.ip)) {
                 entry = search;
             }
         }
         if (entry == null) {
-            entry = new KnownDHTNode();
+            entry = new DHTNodeInfo();
             knownNodes.add(entry);
 
             System.out.println("IP: " + ip.ip + " DHT size: " + getSize());
@@ -58,7 +62,7 @@ public class DHTImpl implements DHT {
 
     @Override
     public void do_() throws Exception {
-        for (KnownDHTNode entry : knownNodes) {
+        for (DHTNodeInfo entry : knownNodes) {
             if (System.currentTimeMillis() - entry.timestamp > 1000l) {
                 try {
                     getnodes(entry, dhtPacketAdapter.myPublicKey);
@@ -74,7 +78,7 @@ public class DHTImpl implements DHT {
         return knownNodes.size();
     }
 
-    void getnodes(KnownDHTNode node, byte[] keyToResolve) throws Exception {
+    void getnodes(DHTNodeInfo node, byte[] keyToResolve) throws Exception {
         byte[] pingId = new byte[]{1, 0, 1, 0, 0, 0, 0, 1,};
         byte[] plain = new Builder()
                 .field(keyToResolve)

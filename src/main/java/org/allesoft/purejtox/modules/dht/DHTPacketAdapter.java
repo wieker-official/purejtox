@@ -4,21 +4,29 @@ import org.allesoft.purejtox.Const;
 import org.allesoft.purejtox.CryptoCore;
 import org.allesoft.purejtox.IPPort;
 import org.allesoft.purejtox.modules.network.Network;
+import org.allesoft.purejtox.modules.network.NetworkHandler;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by wieker on 12/28/15.
  */
-public class DHTPacketAdapter {
+public class DHTPacketAdapter implements NetworkHandler {
     byte[] myPublicKey = new byte[Const.SHARED_SIZE];
     byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
     Network network;
+    DHTImpl dht;
+    Map<Byte, DHTNetworkHandler> networkHandlerMap = new TreeMap<Byte, DHTNetworkHandler>();
 
     byte[] lastPeerPublicKey;
 
-    public DHTPacketAdapter(Network network) {
+    public DHTPacketAdapter(Network network, DHTImpl dht) {
         this.network = network;
+        this.dht = dht;
     }
 
     private CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
@@ -73,5 +81,17 @@ public class DHTPacketAdapter {
 
     public byte[] getLastPeerPublicKey() {
         return lastPeerPublicKey;
+    }
+
+    @Override
+    public void handle(IPPort senderIPPort, byte[] data) throws Exception {
+        byte[] plain_text = decryptCrypto(data);
+        networkHandlerMap.get(data[0]).handle(dht.add(senderIPPort,
+                Arrays.copyOf(dht.getDhtPacketAdapter().getLastPeerPublicKey(),
+                        Const.crypto_box_PUBLICKEYBYTES)), plain_text);
+    }
+
+    public void registerHandler(PacketType code, DHTNetworkHandler handler) {
+        networkHandlerMap.put(code.getCode(), handler);
     }
 }
