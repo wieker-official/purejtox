@@ -10,14 +10,14 @@ import org.allesoft.purejtox.packet.Parser;
 /**
  * Created by wieker on 12/28/15.
  */
-public class DHTPacketHandler {
+public class DHTPacketAdapter {
     byte[] myPublicKey = new byte[Const.SHARED_SIZE];
     byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
     Network network;
 
     byte[] lastPeerPublicKey;
 
-    public DHTPacketHandler(Network network) {
+    public DHTPacketAdapter(Network network) {
         this.network = network;
     }
 
