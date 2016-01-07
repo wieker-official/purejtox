@@ -1,5 +1,6 @@
 package org.allesoft.purejtox.modules.dht;
 
+import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
 import org.allesoft.purejtox.Const;
 import org.allesoft.purejtox.CryptoCore;
 import org.allesoft.purejtox.IPPort;
@@ -16,24 +17,25 @@ import java.util.TreeMap;
  * Created by wieker on 12/28/15.
  */
 public class DHTPacketAdapter implements NetworkHandler {
-    byte[] myPublicKey = new byte[Const.SHARED_SIZE];
-    byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
-    Network network;
-    DHTImpl dht;
-    Map<Byte, DHTNetworkHandler> networkHandlerMap = new TreeMap<Byte, DHTNetworkHandler>();
+    private byte[] myPublicKey = new byte[Const.SHARED_SIZE];
+    private byte[] myPrivateKey = new byte[Const.SHARED_SIZE];
+    private Network network;
+    private DHTImpl dht;
+    private Map<Byte, DHTNetworkHandler> networkHandlerMap = new TreeMap<Byte, DHTNetworkHandler>();
 
-    byte[] lastPeerPublicKey;
+    private byte[] lastPeerPublicKey;
 
     public DHTPacketAdapter(Network network, DHTImpl dht) {
         this.network = network;
         this.dht = dht;
+        curve25519xsalsa20poly1305.crypto_box_keypair(myPublicKey, myPrivateKey);
     }
 
     private CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
         return new CryptoCore(myPrivateKey, peerPublicKey);
     }
 
-    private byte[] getPublicKey() {
+    public byte[] getPublicKey() {
         return myPublicKey;
     }
 
@@ -53,7 +55,7 @@ public class DHTPacketAdapter implements NetworkHandler {
         getNetwork().send(ipPort, packet);
     }
 
-    public byte[] decryptCrypto(byte[] data) throws Exception {
+    private byte[] decryptCrypto(byte[] data) throws Exception {
         Parser parser = new Parser(data)
                 .field(1)
                 .field(Const.crypto_box_PUBLICKEYBYTES)
@@ -79,7 +81,7 @@ public class DHTPacketAdapter implements NetworkHandler {
         return plain_text;
     }
 
-    public byte[] getLastPeerPublicKey() {
+    private byte[] getLastPeerPublicKey() {
         return lastPeerPublicKey;
     }
 

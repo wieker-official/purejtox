@@ -19,8 +19,7 @@ public class DHTImpl implements DHT {
 
     public DHTImpl(Network network) throws Exception {
         dhtPacketAdapter = new DHTPacketAdapter(network, this);
-        curve25519xsalsa20poly1305.crypto_box_keypair(dhtPacketAdapter.myPublicKey, dhtPacketAdapter.myPrivateKey);
-        System.out.println(NaCl.asHex(dhtPacketAdapter.myPublicKey));
+        System.out.println(NaCl.asHex(dhtPacketAdapter.getPublicKey()));
         network.registerHandler(PacketType.SEND_NODES, dhtPacketAdapter);
         dhtPacketAdapter.registerHandler(PacketType.SEND_NODES, new SendNodesHandler(this));
         network.registerHandler(PacketType.GET_NODES, dhtPacketAdapter);
@@ -34,7 +33,7 @@ public class DHTImpl implements DHT {
 
     @Override
     public void bootstrap(IPPort ipPort, byte[] peerPublicKey) throws Exception {
-        getnodes(new DHTNodeInfo(ipPort, peerPublicKey), dhtPacketAdapter.myPublicKey);
+        getnodes(new DHTNodeInfo(ipPort, peerPublicKey), dhtPacketAdapter.getPublicKey());
     }
 
     List<DHTNodeInfo> knownNodes = new ArrayList<DHTNodeInfo>();
@@ -65,7 +64,7 @@ public class DHTImpl implements DHT {
         for (DHTNodeInfo entry : knownNodes) {
             if (System.currentTimeMillis() - entry.timestamp > 1000l) {
                 try {
-                    getnodes(entry, dhtPacketAdapter.myPublicKey);
+                    getnodes(entry, dhtPacketAdapter.getPublicKey());
                 } catch (Exception e) {
                     throw new Exception("Exception for IP: " + entry.ipPort.ip, e);
                 }

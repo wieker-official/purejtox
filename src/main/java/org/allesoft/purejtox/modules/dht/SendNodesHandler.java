@@ -55,7 +55,7 @@ class SendNodesHandler implements DHTNetworkHandler {
             System.out.println("Peer key: " + NaCl.asHex(nodePublicKey));*/
 
             dht.ping(new IPPort(nodeIp, nodePort), nodePublicKey);
-            dht.getnodes(new DHTNodeInfo(new IPPort(nodeIp, nodePort), nodePublicKey), dht.getDhtPacketAdapter().myPublicKey);
+            dht.getnodes(new DHTNodeInfo(new IPPort(nodeIp, nodePort), nodePublicKey), dht.getDhtPacketAdapter().getPublicKey());
         }
     }
 }
