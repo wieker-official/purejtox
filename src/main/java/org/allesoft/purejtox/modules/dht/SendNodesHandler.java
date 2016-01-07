@@ -20,6 +20,8 @@ class SendNodesHandler implements DHTNetworkHandler {
     @Override
     public void handle(DHTNodeInfo dhtNode, byte[] sendNodesPlainText) throws Exception {
         //System.out.printf("sendnodes response parsing\n");
+        dhtNode.sendReceived ++;
+        dhtNode.sendTimestamp = System.currentTimeMillis();
 
         Parser parsedSendNodesResponse = new Parser(sendNodesPlainText)
                 .field(1)
@@ -55,7 +57,7 @@ class SendNodesHandler implements DHTNetworkHandler {
             System.out.println("Peer key: " + NaCl.asHex(nodePublicKey));*/
 
             dht.ping(new IPPort(nodeIp, nodePort), nodePublicKey);
-            dht.getnodes(new DHTNodeInfo(new IPPort(nodeIp, nodePort), nodePublicKey), dht.getDhtPacketAdapter().getPublicKey());
+            dht.getnodes(dht.add(new IPPort(nodeIp, nodePort), nodePublicKey), dht.getDHTPublicKey());
         }
     }
 }

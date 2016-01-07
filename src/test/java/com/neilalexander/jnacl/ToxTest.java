@@ -44,13 +44,16 @@ public class ToxTest {
         dht.bootstrap(ipPort, peerPublic);
 
         for (;;) {
-            try {
-                network.poll();
-            } catch (SocketTimeoutException e) {
-                //System.out.println("timeout");
+            for (int i = 0; i < 100; i++) {
+                try {
+                    network.poll();
+                } catch (SocketTimeoutException e) {
+                    //System.out.println("timeout");
+                }
+                dht.do_();
+                //System.out.println("DHT size: " + dht.getSize());
             }
-            dht.do_();
-            //System.out.println("DHT size: " + dht.getSize());
+            dht.printStat();
         }
     }
 

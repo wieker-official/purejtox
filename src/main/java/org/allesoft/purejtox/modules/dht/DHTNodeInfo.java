@@ -10,10 +10,22 @@ class DHTNodeInfo {
     byte[] publicKey;
     long timestamp;
 
-    public DHTNodeInfo(IPPort ipPort, byte[] publicKey) {
-        this.ipPort = ipPort;
-        this.publicKey = publicKey;
-    }
+    int pingReceived = 0;
+    int pongReceived = 0;
+    int getReceived = 0;
+    int sendReceived = 0;
+
+    long pingTimestamp;
+    long pongTimestamp;
+    long getTimestamp;
+    long sendTimestamp;
+
+    int pingSent = 0;
+    int pongSent = 0;
+    int getSent = 0;
+    int sendSent = 0;
+
+    boolean received = false;
 
     public DHTNodeInfo() {
 

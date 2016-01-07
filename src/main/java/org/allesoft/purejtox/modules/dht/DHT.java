@@ -11,4 +11,6 @@ public interface DHT {
     void do_() throws Exception;
 
     Integer getSize();
+
+    void printStat();
 }

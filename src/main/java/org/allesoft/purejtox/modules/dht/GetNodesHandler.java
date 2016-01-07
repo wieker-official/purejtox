@@ -18,6 +18,8 @@ class GetNodesHandler implements DHTNetworkHandler {
     @Override
     public void handle(DHTNodeInfo dhtNode, byte[] plain_text) throws Exception {
         System.out.printf("getnodes parsing\n");
+        dhtNode.getReceived ++;
+        dhtNode.getTimestamp = System.currentTimeMillis();
 
         Parser general = new Parser(plain_text)
                 .field(Const.crypto_box_PUBLICKEYBYTES)

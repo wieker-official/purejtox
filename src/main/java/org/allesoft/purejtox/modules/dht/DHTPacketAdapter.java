@@ -88,9 +88,11 @@ public class DHTPacketAdapter implements NetworkHandler {
     @Override
     public void handle(IPPort senderIPPort, byte[] data) throws Exception {
         byte[] plain_text = decryptCrypto(data);
-        networkHandlerMap.get(data[0]).handle(dht.add(senderIPPort,
-                Arrays.copyOf(dht.getDhtPacketAdapter().getLastPeerPublicKey(),
-                        Const.crypto_box_PUBLICKEYBYTES)), plain_text);
+        DHTNodeInfo info = dht.add(senderIPPort,
+                Arrays.copyOf(getLastPeerPublicKey(),
+                        Const.crypto_box_PUBLICKEYBYTES));
+        info.received = false;
+        networkHandlerMap.get(data[0]).handle(info, plain_text);
     }
 
     public void registerHandler(PacketType code, DHTNetworkHandler handler) {

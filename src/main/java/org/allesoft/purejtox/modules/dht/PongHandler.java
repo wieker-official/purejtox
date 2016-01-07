@@ -18,5 +18,7 @@ class PongHandler implements DHTNetworkHandler {
         System.out.printf("Pong parsing\n");
         System.out.println("Payload: " + NaCl.asHex(plain_text));
 
+        dhtNode.pongReceived ++;
+        dhtNode.pongTimestamp = System.currentTimeMillis();
     }
 }

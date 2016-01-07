@@ -17,6 +17,8 @@ class PingHandler implements DHTNetworkHandler {
     public void handle(DHTNodeInfo dhtNode, byte[] plain_text) throws Exception {
         //System.out.printf("Ping parsing\n");
         //System.out.println("Payload: " + NaCl.asHex(plain_text));
+        dhtNode.pingReceived ++;
+        dhtNode.pingTimestamp = System.currentTimeMillis();
 
         dht.pong(dhtNode.ipPort, dhtNode.publicKey, Arrays.copyOfRange(plain_text, 1, 9));
     }
