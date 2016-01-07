@@ -19,6 +19,7 @@ public class NetworkImpl implements Network {
 
     public NetworkImpl() throws Exception {
         clientSocket = new DatagramSocket(33445);
+        clientSocket.setSoTimeout(100);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class NetworkImpl implements Network {
     public void poll() throws Exception {
         byte[] receiveData = new byte[102400];
         byte[] packet;
-        for (;;) {
+        for (int i = 0; i < 100; i ++) {
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);
             packet = new byte[receivePacket.getLength()];

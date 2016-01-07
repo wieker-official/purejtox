@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.security.SecureRandom;
 
 /**
@@ -42,7 +43,15 @@ public class ToxTest {
 
         dht.bootstrap(ipPort, peerPublic);
 
-        network.poll();
+        for (;;) {
+            try {
+                network.poll();
+            } catch (SocketTimeoutException e) {
+                //System.out.println("timeout");
+            }
+            dht.do_();
+            //System.out.println("DHT size: " + dht.getSize());
+        }
     }
 
     @Test

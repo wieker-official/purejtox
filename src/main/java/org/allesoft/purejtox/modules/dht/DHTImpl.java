@@ -9,7 +9,9 @@ import org.allesoft.purejtox.modules.network.NetworkHandler;
 import org.allesoft.purejtox.packet.Builder;
 import org.allesoft.purejtox.packet.Parser;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by wieker on 12/19/15.
@@ -23,7 +25,8 @@ public class DHTImpl implements DHT {
         curve25519xsalsa20poly1305.crypto_box_keypair(dhtPacketHandler.myPublicKey, dhtPacketHandler.myPrivateKey);
         System.out.println(NaCl.asHex(dhtPacketHandler.myPublicKey));
         network.registerHandler(PacketType.SEND_NODES, new SendNodesHandler());
-        network.registerHandler(PacketType.GET_NODES, new GetNodesHandler());;
+        network.registerHandler(PacketType.GET_NODES, new GetNodesHandler());
+        ;
         network.registerHandler(PacketType.PING_RESPONSE, new PongHandler());
         network.registerHandler(PacketType.PING_REQUEST, new PingHandler());
     }
@@ -33,18 +36,60 @@ public class DHTImpl implements DHT {
         getnodes(ipPort, peerPublicKey, dhtPacketHandler.myPublicKey);
     }
 
+    class KeyEntry {
+        IPPort ipp;
+        byte[] publicKey;
+        long timestamp;
+    }
+
+    List<KeyEntry> closest = new ArrayList<KeyEntry>();
+
+    void add(IPPort ip, byte[] remotePeerKey) throws Exception {
+        KeyEntry entry = null;
+        for (KeyEntry search : closest) {
+            if (search.ipp.port.equals(ip.port) &&
+                    search.ipp.ip.equals(ip.ip)) {
+                entry = search;
+            }
+        }
+        if (entry == null) {
+            entry = new KeyEntry();
+            closest.add(entry);
+        }
+        entry.ipp = ip;
+        entry.publicKey = remotePeerKey;
+        entry.timestamp = System.currentTimeMillis();
+
+        System.out.println("DHT size: " + getSize());
+    }
+
+    @Override
+    public void do_() throws Exception {
+        for (KeyEntry entry : closest) {
+            if (System.currentTimeMillis() - entry.timestamp > 1000l) {
+                getnodes(entry.ipp, entry.publicKey, dhtPacketHandler.myPublicKey);
+            }
+        }
+    }
+
+    @Override
+    public Integer getSize() {
+        return closest.size();
+    }
+
     void getnodes(IPPort ipPort, byte[] peerPublicKey, byte[] keyToResolve) throws Exception {
-        byte[] pingId = new byte[] { 1, 0, 1, 0, 0, 0, 0, 1, };
+        byte[] pingId = new byte[]{1, 0, 1, 0, 0, 0, 0, 1,};
         byte[] plain = new Builder()
                 .field(keyToResolve)
                 .field(pingId)
                 .build();
         dhtPacketHandler.encryptAndSend(PacketType.GET_NODES, ipPort, peerPublicKey, plain);
+        //System.out.println("Sent to: " + ipPort.ip);
     }
 
     void sendnodes(IPPort ipPort, byte[] peerPublicKey, byte[] back) throws Exception {
         byte[] plain = new Builder()
-                .field(new byte[] { 0 })
+                .field(new byte[]{0})
                 .field(back)
                 .build();
         dhtPacketHandler.encryptAndSend(PacketType.SEND_NODES, ipPort, peerPublicKey, plain);
@@ -52,7 +97,7 @@ public class DHTImpl implements DHT {
 
     void ping(IPPort ipPort, byte[] peerPublicKey) throws Exception {
         byte[] ping_plain = new byte[Const.PING_PLAIN_SIZE];
-        byte[] pingId = new byte[] { 1, 0, 1, 0, 0, 0, 0, 1, };
+        byte[] pingId = new byte[]{1, 0, 1, 0, 0, 0, 0, 1,};
         ping_plain[0] = 0;
         System.arraycopy(pingId, 0, ping_plain, 1, pingId.length);
 
@@ -72,8 +117,9 @@ public class DHTImpl implements DHT {
 
         @Override
         public void handle(IPPort senderIPPort, byte[] data) throws Exception {
-            System.out.printf("sendnodes response parsing\n");
+            //System.out.printf("sendnodes response parsing\n");
             byte[] sendNodesPlainText = dhtPacketHandler.decryptCrypto(data);
+            add(senderIPPort, dhtPacketHandler.getLastPeerPublicKey());
 
             Parser parsedSendNodesResponse = new Parser(sendNodesPlainText)
                     .field(1)
@@ -86,7 +132,7 @@ public class DHTImpl implements DHT {
             System.out.println("Count: " + NaCl.asHex(parsedSendNodesResponse.getField(0)));
             System.out.println("Comeback: " + NaCl.asHex(parsedSendNodesResponse.getField(2)));*/
             byte[] sendNodesResponseEntriesPayload = parsedSendNodesResponse.getField(1);
-            for (int i = 0; i < sendNodesResponseEntriesCount; i ++) {
+            for (int i = 0; i < sendNodesResponseEntriesCount; i++) {
                 int sendNodesResponseEntrySize = 1 + 4 + 2 + Const.crypto_box_PUBLICKEYBYTES;
                 byte[] responseEntry = Arrays.copyOfRange(sendNodesResponseEntriesPayload, i * sendNodesResponseEntrySize, (i + 1) * sendNodesResponseEntrySize);
 
@@ -109,7 +155,7 @@ public class DHTImpl implements DHT {
                 System.out.println("Peer key: " + NaCl.asHex(nodePublicKey));*/
 
                 ping(new IPPort(nodeIp, nodePort), nodePublicKey);
-                //getnodes(new IPPort(nodeIp, nodePort), nodePublicKey, dhtPacketHandler.myPublicKey);
+                getnodes(new IPPort(nodeIp, nodePort), nodePublicKey, dhtPacketHandler.myPublicKey);
             }
         }
     }
@@ -140,6 +186,8 @@ public class DHTImpl implements DHT {
             System.out.printf("Pong parsing\n");
             byte[] plain_text = dhtPacketHandler.decryptCrypto(data);
             System.out.println("Payload: " + NaCl.asHex(plain_text));
+
+            add(senderIPPort, Arrays.copyOfRange(data, 1, 9));
         }
     }
 
@@ -151,6 +199,7 @@ public class DHTImpl implements DHT {
             byte[] plain_text = dhtPacketHandler.decryptCrypto(data);
             System.out.println("Payload: " + NaCl.asHex(plain_text));
 
+            add(senderIPPort, Arrays.copyOfRange(data, 1, 9));
             pong(senderIPPort, dhtPacketHandler.getLastPeerPublicKey(), Arrays.copyOfRange(plain_text, 1, 9));
         }
     }

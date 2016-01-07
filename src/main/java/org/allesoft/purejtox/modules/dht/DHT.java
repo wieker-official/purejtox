@@ -7,4 +7,8 @@ import org.allesoft.purejtox.IPPort;
  */
 public interface DHT {
     void bootstrap(IPPort ipPort, byte[] peerPublicKey) throws Exception;
+
+    void do_() throws Exception;
+
+    Integer getSize();
 }
