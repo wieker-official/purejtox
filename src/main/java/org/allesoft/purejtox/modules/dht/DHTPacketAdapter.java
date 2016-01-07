@@ -21,15 +21,15 @@ public class DHTPacketAdapter {
         this.network = network;
     }
 
-    public CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
+    private CryptoCore getEncrypter(byte[] peerPublicKey) throws Exception {
         return new CryptoCore(myPrivateKey, peerPublicKey);
     }
 
-    public byte[] getPublicKey() {
+    private byte[] getPublicKey() {
         return myPublicKey;
     }
 
-    public Network getNetwork() {
+    private Network getNetwork() {
         return network;
     }
 
