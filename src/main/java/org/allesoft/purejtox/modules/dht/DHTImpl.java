@@ -7,6 +7,7 @@ import org.allesoft.purejtox.IPPort;
 import org.allesoft.purejtox.modules.network.Network;
 import org.allesoft.purejtox.packet.Builder;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +70,8 @@ public class DHTImpl implements DHT {
     }
 
     void getnodes(DHTNodeInfo node, byte[] keyToResolve) throws Exception {
-        byte[] pingId = new byte[]{1, 0, 1, 0, 0, 0, 0, 1,};
+        byte[] pingId = new byte[8];
+        new SecureRandom().nextBytes(pingId);
         byte[] plain = new Builder()
                 .field(keyToResolve)
                 .field(pingId)
@@ -89,7 +91,8 @@ public class DHTImpl implements DHT {
 
     void ping(IPPort ipPort, byte[] peerPublicKey) throws Exception {
         byte[] ping_plain = new byte[Const.PING_PLAIN_SIZE];
-        byte[] pingId = new byte[]{1, 0, 1, 0, 0, 0, 0, 1,};
+        byte[] pingId = new byte[8];
+        new SecureRandom().nextBytes(pingId);
         ping_plain[0] = 0;
         System.arraycopy(pingId, 0, ping_plain, 1, pingId.length);
 
