@@ -13,4 +13,9 @@ public interface DHT {
     Integer getSize();
 
     void printStat();
+
+    void addSearch(byte[] key);
+
+    byte[] getDHTPublicKey();
+
 }

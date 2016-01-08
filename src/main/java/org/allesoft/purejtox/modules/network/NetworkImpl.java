@@ -22,6 +22,11 @@ public class NetworkImpl implements Network {
         clientSocket.setSoTimeout(100);
     }
 
+    public NetworkImpl(Integer port) throws Exception {
+        clientSocket = new DatagramSocket(port);
+        clientSocket.setSoTimeout(100);
+    }
+
     @Override
     public void send(IPPort ipPort, byte[] packet) throws Exception {
         //System.out.println(ipPort.ip + ":" + ipPort.port);

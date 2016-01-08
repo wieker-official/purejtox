@@ -45,6 +45,9 @@ public class DHTImpl implements DHT {
             if (System.currentTimeMillis() - entry.timestamp > 1000l && entry.received) {
                 try {
                     getnodes(entry, dhtPacketAdapter.getPublicKey());
+                    if (searchList.size() > 0) {
+                        getnodes(entry, searchList.get(0));
+                    }
                 } catch (Exception e) {
                     throw new Exception("Exception for IP: " + entry.ipPort.ip, e);
                 }
@@ -60,7 +63,7 @@ public class DHTImpl implements DHT {
     @Override
     public void printStat() {
         for (DHTNodeInfo info : knownNodes) {
-            System.out.println("IP: " + info.ipPort.ip + " Received Info: " + info.sendReceived + " Ping: " + info.pingReceived +
+            System.out.println("this: " + this + " IP: " + info.ipPort.ip + " Received Info: " + info.sendReceived + " Ping: " + info.pingReceived +
                     " Pong: " + info.pongReceived + " Sent: " + info.getSent);
         }
     }
@@ -102,7 +105,7 @@ public class DHTImpl implements DHT {
         dhtPacketAdapter.encryptAndSend(PacketType.PING_RESPONSE, ipPort, peerPublicKey, ping_plain);
     }
 
-    byte[] getDHTPublicKey() {
+    public byte[] getDHTPublicKey() {
         return dhtPacketAdapter.getPublicKey();
     }
 
@@ -127,4 +130,8 @@ public class DHTImpl implements DHT {
         return entry;
     }
 
+    @Override
+    public void addSearch(byte[] key) {
+        searchList.add(key);
+    }
 }
