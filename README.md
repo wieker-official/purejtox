@@ -1,12 +1,8 @@
-jnacl
+purejtox
 =====
 
-Pure Java implementation of the [NaCl: Networking and Cryptography library](http://nacl.cr.yp.to/)
-
-Supports the following crypto primitives:
-
-* curve25519xsalsa20poly1305 
-* hmacsha256
+Pure Java implementation of the Tox library
+Based on jnacl
 
 License
 -------
